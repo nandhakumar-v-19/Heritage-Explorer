@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tourist Guide - Salem</title>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script> <!-- Icons -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+            text-align: center;
+            color: #333;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: #007bff;
+            color: white;
+            border-radius: 10px;
+            font-size: 22px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 26px;
+        }
+        .location {
+            font-weight: bold;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .location i {
+            margin-right: 8px;
+        }
+        #places-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 40px;
+        }
+        .place-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 300px;
+            background: white;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            margin: 20px;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .place-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+        }
+        img {
+            width: 100%;
+            border-radius: 12px;
+            height: 200px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        img:hover {
+            transform: scale(1.05);
+        }
+        .description {
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            font-size: 14px;
+            color: #555;
+        }
+        .view-details {
+            font-size: 14px;
+            color: #007bff;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            margin-top: 15px;
+        }
+        .view-details:hover {
+            color: #0056b3;
+        }
+        .view-details i {
+            margin-right: 5px;
+        }
+        button, select {
+            padding: 10px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s ease;
+        }
+        button {
+            background: #007bff;
+            color: white;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        select {
+            background: #e9ecef;
+            color: #333;
+        }
+        #nearby-places {
+            display: none;
+            margin-top: 40px;
+            text-align: left;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 20px;
+            background: #ffffff;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            transition: box-shadow 0.3s ease;
+        }
+        #nearby-places h3 {
+            color: #007bff;
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+        #nearby-places p {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+            font-size: 14px;
+            transition: background 0.3s ease;
+        }
+        #nearby-places p:hover {
+            background: #f1f3f5;
+        }
+        #nearby-places p a {
+            text-decoration: none;
+            color: #007bff;
+        }
+        #nearby-places p a:hover {
+            color: #0056b3;
+        }
+        .icon {
+            margin-right: 8px;
+        }
+        .slideshow-container {
+            position: relative;
+            max-width: 100%;
+            height: 200px;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
+
+        .fade {
+            animation: fadeEffect 1.5s ease-in-out;
+        }
+
+        @keyframes fadeEffect {
+            from { opacity: 0.4; }
+            to { opacity: 1; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1><i class="fas fa-map-marked-alt"></i> Tourist Guide - Salem</h1>
+        <span id="user-location" class="location"><i class="fas fa-map-pin"></i> Fetching location...</span>
+    </div>
+
+    <!-- Added a margin to create space between header and button -->
+    <button onclick="getNearbyPlaces()" style="margin-top: 30px;"><i class="fas fa-map-marker-alt"></i> Show Nearby Places</button>
+
+    <!-- Initially hidden -->
+    <div id="nearby-places"></div>
+
+    <div id="places-list">
+        {% for place in places %}
+        <div class="place-card">
+            <div class="slideshow-container">
+                {% set main_images = place['Sub-Place Images'].split(', ')[:3] if place['Sub-Place Images'] else [] %}
+                {% for img in main_images %}
+                <div class="slide fade">
+                    <img src="{{ url_for('serve_updated_image', filename=img.split('/')[-1]) }}" alt="{{ place['Place Name'] }}">
+                </div>
+                {% endfor %}
+            </div>
+            <h3>{{ place['Place Name'] }}</h3>
+            <p id="desc-{{ loop.index }}" class="description" data-original-text="{{ place['Short Description'] if 'Short Description' in place and place['Short Description'] else place['Description'][:100] }}">
+                {{ place['Short Description'] if 'Short Description' in place and place['Short Description'] else place['Description'][:100] }}...
+            </p>
+            <a href="{{ url_for('place_details', place_name=place['Place Name']|replace(' ', '_')) }}" class="view-details">
+                <i class="fas fa-info-circle"></i> View Details
+            </a>
+            <br>
+            <select id="language">
+                <option value="ta">Tamil</option>
+                <option value="ml">Malayalam</option>
+                <option value="fr">French</option>
+                <option value="ko">Korean</option>
+                <option value="te">Telugu</option>
+                <option value="kn">Kannada</option>
+            </select>
+            <button onclick="translateText({{ loop.index }})"><i class="fas fa-language"></i> Translate</button>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        let userLat, userLon;
+
+        function fetchUserLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.watchPosition(position => {  // ✅ Live location tracking
+                    userLat = position.coords.latitude;
+                    userLon = position.coords.longitude;
+                    getLocationName(userLat, userLon);
+                }, () => {
+                    document.getElementById("user-location").innerText = "Location access denied.";
+                });
+            } else {
+                document.getElementById("user-location").innerText = "Geolocation not supported.";
+            }
+        }
+
+        function getLocationName(lat, lon) {
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.address) {
+                        let locality = data.address.suburb || data.address.neighbourhood || data.address.village || data.address.town || data.address.city || "";
+                        let district = data.address.county || "Salem";  // Default to Salem if county is missing
+                        let state = data.address.state || "Tamil Nadu";
+                        let country = data.address.country || "India";
+
+                        // Format with capitalization and commas
+                        let locationText = `${locality}, ${district}, ${state}, ${country}`.trim();
+
+                        document.getElementById("user-location").innerText = locationText;
+                    } else {
+                        document.getElementById("user-location").innerText = "Location not found.";
+                    }
+                })
+                .catch(() => {
+                    document.getElementById("user-location").innerText = "Error fetching location.";
+                });
+        }
+
+        // Call function when page loads
+        fetchUserLocation();
+
+
+
+        function getNearbyPlaces() {
+            if (!userLat || !userLon) {
+                alert("Location not available. Please allow location access.");
+                return;
+            }
+
+            fetch('/nearby', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ latitude: userLat, longitude: userLon })
+            })
+            .then(response => response.json())
+            .then(data => {
+                let output = "<h3><i class='fas fa-map-marker-alt'></i> Nearby Places:</h3>";
+                if (data.length === 0) {
+                    output += "<p>No nearby places found within the range.</p>";
+                } else {
+                    data.forEach(place => {
+                        output += `<p><a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(place.name)}" target="_blank">
+                                <i class='fas fa-location-arrow'></i> ${place.name} - ${place.distance_km} km away
+                            </a></p>`;
+                    });
+                }
+                document.getElementById("nearby-places").innerHTML = output;
+
+                // Show the nearby places section
+                document.getElementById("nearby-places").style.display = "block";
+            });
+        }
+
+        function translateText(index) {
+            let descElement = document.getElementById("desc-" + index);
+            let text = descElement.dataset.originalText;
+            let lang = document.querySelectorAll(".lang-selector")[index - 1].value;
+
+            fetch('/translate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: text, language: lang })
+            })
+            .then(response => response.json())
+            .then(data => {
+                descElement.innerText = data.translated_text || "Translation error!";
+            });
+        }
+
+        fetchUserLocation();
+
+        document.addEventListener("DOMContentLoaded", function () {
+            let slideshows = document.querySelectorAll(".slideshow-container");
+
+            slideshows.forEach(slideshow => {
+                let slides = slideshow.querySelectorAll(".slide");
+                let index = 0;
+
+                function showNextSlide() {
+                    slides.forEach(slide => slide.style.display = "none");
+                    slides[index].style.display = "block";
+                    index = (index + 1) % slides.length;
+                }
+
+                showNextSlide();
+                setInterval(showNextSlide, 4000); // Change every 4 seconds
+            });
+        });
+    </script>
+
+</body>
+</html>

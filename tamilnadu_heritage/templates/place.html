@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ place['Place Name'] }} - Details</title>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <style>
+        /* General Page Styling */
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f4f7fc;
+            text-align: center;
+        }
+
+        /* Container */
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            text-align: left;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .container:hover {
+            transform: scale(1.02);
+        }
+
+        /* Main Images */
+        .main-images {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .main-image {
+            width: 30%;
+            border-radius: 10px;
+            max-height: 250px;
+            object-fit: cover;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .main-image:hover {
+            transform: scale(1.05);
+        }
+
+        /* Title */
+        h1 {
+            color: #007bff;
+            font-size: 30px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Description Styling */
+        .description {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #333;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            background: #f9f9f9;
+        }
+
+        /* Bold Headers Inside Description */
+        .description strong {
+            display: block;
+            font-size: 18px;
+            margin-top: 15px;
+            color: #007bff;
+        }
+
+        /* Bullet Points */
+        .description ul {
+            padding-left: 20px;
+            list-style-type: none;
+        }
+
+        .description li {
+            margin-bottom: 8px;
+            position: relative;
+            padding-left: 25px;
+        }
+
+        .description li::before {
+            content: "\f058"; /* Font Awesome Check Icon */
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            color: #007bff;
+            position: absolute;
+            left: 0;
+            top: 3px;
+        }
+
+        /* Sub-Place Styling */
+        .sub-place {
+            background: #ffffff;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .sub-place:hover {
+            transform: scale(1.05);
+        }
+
+        /* Sub-Place Title */
+        .sub-place h3 {
+            font-size: 18px;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+
+        /* Sub-Place Image */
+        .sub-place img {
+            width: 100%;
+            max-height: 250px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        /* Buttons */
+        .back-btn, .translate-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background 0.3s ease-in-out;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .back-btn:hover, .translate-btn:hover {
+            background: #0056b3;
+        }
+
+        /* Centering the Translation Section */
+        .translate-section {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .translate-section:hover {
+            transform: scale(1.03);
+        }
+
+        /* Select Box */
+        select {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* Google Maps Link */
+        .maps-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1><i class="fas fa-map-marker-alt"></i> {{ place['Place Name'] }}</h1>
+
+        <!-- Show the three main images -->
+        <div class="main-images">
+            {% for img in place['Main Images'] %}
+                <img class="main-image" src="{{ url_for('serve_updated_image', filename=img.strip().split('/')[-1]) }}" alt="{{ place['Place Name'] }}">
+            {% endfor %}
+        </div>
+
+        <!-- Show full description -->
+        <div class="description">
+            <h2><i class="fas fa-info-circle"></i> Description</h2>
+            <div id="description">{{ place['Description'] | safe }}</div>
+        </div>
+
+        <!-- Only show the Sub-Places section if sub-places exist -->
+        {% if place['Sub-Places Data'] %}
+            <h2><i class="fas fa-map-signs"></i> Sub-Places</h2>
+            {% for sub in place['Sub-Places Data'] %}
+                <div class="sub-place">
+                    <h3>{{ sub['name'] }}</h3>
+                    {% if sub['image'] %}
+                        <img src="{{ url_for('serve_updated_image', filename=sub['image'].strip().split('/')[-1]) }}" alt="{{ sub['name'] }}">
+                    {% endif %}
+                    <p id="sub-description-{{ loop.index }}">{{ sub['description'] | safe }}</p>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Google Maps Link -->
+        <div class="maps-link">
+            <h2><i class="fas fa-directions"></i> Navigate to {{ place['Place Name'] }}</h2>
+            <a href="https://www.google.com/maps/search/?api=1&query={{ place['Latitude'] }},{{ place['Longitude'] }}" target="_blank" class="back-btn">
+                <i class="fas fa-map"></i> Open in Google Maps
+            </a>
+        </div>
+
+        <!-- Translate Section -->
+        <div class="translate-section">
+            <h2><i class="fas fa-language"></i> Translate Description</h2>
+            <select id="language">
+                <option value="ta">Tamil</option>
+                <option value="ml">Malayalam</option>
+                <option value="fr">French</option>
+                <option value="ko">Korean</option>
+                <option value="te">Telugu</option>
+                <option value="kn">Kannada</option>
+            </select>
+
+            <button class="translate-btn" onclick="translateText()"><i class="fas fa-globe"></i> Translate</button>
+        </div>
+
+        <!-- Back Button -->
+        <br><br>
+        <a href="{{ url_for('home') }}" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Home</a>
+    </div>
+
+    <script>
+        function translateText() {
+            let text = document.getElementById("description").innerText;
+            let lang = document.getElementById("language").value;
+
+            fetch('/translate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: text, language: lang })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("description").innerHTML = data.translated_text || "Translation error!";
+            });
+        }
+    </script>
+
+</body>
+</html>
